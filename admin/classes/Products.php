@@ -121,7 +121,7 @@ class Products
 			if ($file['size'] > (1024 * 2)) {
 				
 				$uniqueImageName = time()."_".$file['name'];
-				if (move_uploaded_file($file['tmp_name'], $_SERVER['DOCUMENT_ROOT']."/Ecommerce-master/product_images/".$uniqueImageName)) {
+				if (move_uploaded_file($file['tmp_name'], $_SERVER['DOCUMENT_ROOT']."/FarmTech_-Rental-System-For-Agriculture-Equipment/product_images/".$uniqueImageName)) {
 					
 					$q = $this->con->query("UPDATE `products` SET 
 										`product_cat` = '$category_id', 
