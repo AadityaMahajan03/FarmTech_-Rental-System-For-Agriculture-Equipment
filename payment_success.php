@@ -1,109 +1,87 @@
 <?php
-
 session_start();
 if(!isset($_SESSION["uid"])){
-	header("location:index.php");
+    header("location:index.php");
+    exit();
 }
 
-function random_strings($length_of_string)
-{
-	
-    // String of all alphanumeric character
-    $str_result = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
- 
-    // Shuffle the $str_result and returns substring
-    // of specified length
-    return substr(str_shuffle($str_result),
-                       0, $length_of_string);
-}
-	# code...
-	$trx_id =random_strings(17);
-	$p_st = "completed";
-	$cm_user_id = $_SESSION["uid"];
-	$mobile = $_SESSION["email"];
-	$f_name = $_SESSION["name"];
+// Get transaction ID from URL parameter
+$trx_id = isset($_GET['trx_id']) ? $_GET['trx_id'] : 'Unknown';
 
-		include_once("db.php");
-		$sql = "SELECT p_id,qty FROM cart WHERE user_id = '$cm_user_id'" ;// && "SELECT first_name,mobile FROM user_info";
-		$query = mysqli_query($con,$sql);
-		//echo mysqli_num_rows($query);
-		if (mysqli_num_rows($query) > 0) {
-			# code...
-			while ($row=mysqli_fetch_array($query)) {
-			$product_id[] = $row["p_id"];
-			$qty[] = $row["qty"];
-			//$fname = $row["first_name"];
-			//$m = $row["mobile"];
-			}
+// Get user information
+$cm_user_id = $_SESSION["uid"];
+$f_name = $_SESSION["name"];
 
-			for ($i=0; $i < count($product_id); $i++) { 
-				$sql = "INSERT INTO orders (user_id,product_id,qty,trx_id,p_status,cust_name,cust_num) VALUES ('$cm_user_id','".$product_id[$i]."','".$qty[$i]."','$trx_id','$p_st','$f_name',$mobile)";
-				mysqli_query($con,$sql);
-			}
-			$sql = "DELETE FROM cart WHERE user_id = '$cm_user_id'";
-			if (mysqli_query($con,$sql)) {
-		?>
-					<!DOCTYPE html>
-					<html>
-						<head>
-							<meta charset="UTF-8">
-							<title>FARMTECH</title>
-							<link rel="stylesheet" href="css/bootstrap.min.css"/>
-							<script src="js/jquery2.js"></script>
-							<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-							<script src="js/bootstrap.min.js"></script>
-							<script src="main.js"></script>
-							<style>
-								table tr td {padding:10px;}
-							</style>
-						</head>
-					<body>
-						<div class="navbar navbar-inverse navbar-fixed-top">
-							<div class="container-fluid">	
-								<div class="navbar-header">
-									<a href="#" class="navbar-brand">FARMTECH</a>
-								</div>
-								<ul class="nav navbar-nav">
-									<li><a href="index.php"><span class="glyphicon glyphicon-home"></span>Home</a></li>
-									<li><a href="profile.php"><span class="glyphicon glyphicon-modal-window"></span>Equipments</a></li>
-								</ul>
-							</div>
-						</div>
-						<p><br/></p>
-						<p><br/></p>
-						<p><br/></p>
-						<div class="container-fluid">
-						
-							<div class="row">
-								<div class="col-md-2"></div>
-								<div class="col-md-8">
-									<div class="panel panel-default" style="display: flex; justify-content:space-between;">
-										<div class="panel-heading" style="background-color:red;">
-			<lottie-player src="https://assets3.lottiefiles.com/packages/lf20_lc7svuzc.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"    autoplay></lottie-player>
-											
-										</div>
-										<div class="panel-body" >
-											<h1>Thank You!</h1>
-											<hr/>
-											<p>Hello <?php echo "<b>".$_SESSION["name"]."</b>"; ?>,Your payment process is 
-											successfully completed and your Transaction id is <b><?php echo $trx_id; ?></b><br/>
-											you can continue your Shopping <br/></p>
-											<a href="index.php" class="btn btn-success btn-lg">Continue Shopping</a>
-										</div>
-										<div class="panel-footer"></div>
-									</div>
-								</div>
-								<div class="col-md-2"></div>
-							</div>
-			            </div>
-					</body>
-					</html>
-
-				<?php
-			}
-		
-		
-	}
-
+include_once("db.php");
 ?>
-
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>FARMTECH</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+        <script src="js/jquery2.js"></script>
+        <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="main.js"></script>
+        <style>
+            table tr td {padding:10px;}
+            .success-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+            }
+            .success-message {
+                flex: 1;
+                padding: 20px;
+            }
+            .animation-container {
+                flex: 1;
+            }
+        </style>
+    </head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">	
+            <div class="navbar-header">
+                <a href="#" class="navbar-brand">FARMTECH</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="index.php"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+                <li><a href="profile.php"><span class="glyphicon glyphicon-modal-window"></span>Equipments</a></li>
+            </ul>
+        </div>
+    </div>
+    <p><br/></p>
+    <p><br/></p>
+    <p><br/></p>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="background-color:#4CAF50; color:white;">
+                        <h3>Payment Successful</h3>
+                    </div>
+                    <div class="panel-body success-container">
+                        <div class="animation-container">
+                            <lottie-player src="https://assets3.lottiefiles.com/packages/lf20_lc7svuzc.json" background="transparent" speed="1" style="width: 300px; height: 300px;" autoplay></lottie-player>
+                        </div>
+                        <div class="success-message">
+                            <h1>Thank You!</h1>
+                            <hr/>
+                            <p>Hello <b><?php echo $_SESSION["name"]; ?></b>, your payment process is 
+                            successfully completed and your Transaction ID is <b><?php echo $trx_id; ?></b><br/>
+                            You can continue your Shopping <br/></p>
+                            <a href="index.php" class="btn btn-success btn-lg">Continue Shopping</a>
+                        </div>
+                    </div>
+                    <div class="panel-footer"></div>
+                </div>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -117,7 +117,7 @@ if (!isset($_SESSION["uid"])) {
                         <div class="heading2">PAYMENT DETAILS</div>
                     </div>
                     <div class="card-body col-10 offset-1">
-                        <form onsubmit="return pay()" action="payment_success.php">
+                        <form onsubmit="return pay()" action="payment_process.php">
                             <div class="form-group">
                                 <label><small><strong class="text-muted">CARD HOLDER</strong></small></label>
                                 <input type="text" class="form-control" id="c_name" placeholder="CARD HOLDER NAME" required minlength="5" maxlength="30">

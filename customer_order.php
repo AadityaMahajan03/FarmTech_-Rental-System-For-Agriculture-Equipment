@@ -14,14 +14,23 @@ if (!$con) {
 
 $user_id = $_SESSION["uid"];
 
-// Fetch user's orders
+// Fetch user's orders with address information using prepared statement
 $orders_list = "SELECT o.order_id, o.user_id, o.product_id, o.qty, o.trx_id, o.p_status, 
-                        p.product_title, p.product_price, p.product_image 
+                o.order_address, o.order_date, p.product_title, p.product_price, p.product_image 
                 FROM orders o 
                 INNER JOIN products p ON o.product_id = p.product_id 
-                WHERE o.user_id='$user_id'";
+                WHERE o.user_id = ?
+                ORDER BY o.order_date DESC"; // Added order date sorting
 
-$query = mysqli_query($con, $orders_list) or die("Error: " . mysqli_error($con));
+$stmt = mysqli_prepare($con, $orders_list);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$query = mysqli_stmt_get_result($stmt);
+
+// Debugging: Check if the query fetched any results
+if (!$query) {
+    die("Query Failed: " . mysqli_error($con));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,6 +43,7 @@ $query = mysqli_query($con, $orders_list) or die("Error: " . mysqli_error($con))
     <script src="main.js"></script>
     <style>
         table tr td { padding: 10px; }
+        .order-item { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -60,31 +70,45 @@ $query = mysqli_query($con, $orders_list) or die("Error: " . mysqli_error($con))
                         <h2>Customer Order Details</h2>
                     </div>
                     <div class="panel-body">
-                        <hr/>
                         <?php
                         if (mysqli_num_rows($query) > 0) {
+                            $current_trx = '';
                             while ($row = mysqli_fetch_array($query)) {
+                                // Group orders by transaction ID
+                                if ($current_trx != $row['trx_id']) {
+                                    if ($current_trx != '') {
+                                        echo '</div>'; // Close previous transaction group
+                                    }
+                                    echo '<div class="transaction-group" style="margin-bottom: 40px;">';
+                                    echo '<h4>Transaction #: ' . $row['trx_id'] . '</h4>';
+                                    echo '<p>Order Date: ' . date('M j, Y g:i A', strtotime($row['order_date'])) . '</p>';
+                                    $current_trx = $row['trx_id'];
+                                }
                         ?>
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <img style="float:right;" src="product_images/<?php echo $row['product_image']; ?>" 
-                                             class="img-responsive img-thumbnail" width="200px"/>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <table>
-                                            <tr><td><strong>Equipment Name:</strong></td><td><?php echo $row["product_title"]; ?></td></tr>
-                                            <tr><td><strong>Equipment Cost:</strong></td><td><?php echo "Rs " . $row["product_price"]; ?></td></tr>
-                                            <tr><td><strong>Hiring Time (in Hrs):</strong></td><td><?php echo $row["qty"]; ?></td></tr>
-                                            <tr><td><strong>Transaction ID:</strong></td><td><?php echo $row["trx_id"]; ?></td></tr>
-                                            <tr><td><strong>Payment Status:</strong></td><td><?php echo ucfirst($row["p_status"]); ?></td></tr>
-                                        </table>
+                                <div class="order-item">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img src="product_images/<?php echo $row['product_image']; ?>" 
+                                                 class="img-responsive img-thumbnail"/>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <table class="table">
+                                                <tr><td><strong>Equipment Name:</strong></td><td><?php echo $row["product_title"]; ?></td></tr>
+                                                <tr><td><strong>Equipment Cost:</strong></td><td><?php echo "Rs " . $row["product_price"]; ?></td></tr>
+                                                <tr><td><strong>Hiring Time (in Hrs):</strong></td><td><?php echo $row["qty"]; ?></td></tr>
+                                                <tr><td><strong>Payment Status:</strong></td><td><?php echo ucfirst($row["p_status"]); ?></td></tr>
+                                                <?php if (!empty($row["order_address"])): ?>
+                                                <tr><td><strong>Delivery Address:</strong></td><td><?php echo $row["order_address"]; ?></td></tr>
+                                                <?php endif; ?>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                                <hr/>
                         <?php
                             }
+                            echo '</div>'; // Close last transaction group
                         } else {
-                            echo "<h3 class='text-center text-danger'>No orders found!</h3>";
+                            echo "<div class='alert alert-info text-center'>No orders found!</div>";
                         }
                         ?>
                     </div>
